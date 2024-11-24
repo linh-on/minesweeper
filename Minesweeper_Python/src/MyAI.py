@@ -67,6 +67,8 @@ class MyAI( AI ):
         self.getNewSafeCoordinate()
         check_print("Mines: ", self.__mines)
 
+        # add code here
+
         safe = self.checkSafe(self.__valueX, self.__valueY, number) #add safe coord to toVisit when it's 0)
 
         for new_x, new_y in safe:
