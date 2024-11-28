@@ -61,13 +61,12 @@ class MyAI( AI ):
 
         if number > 0:
             self.__minesDict[(self.__valueX, self.__valueY)] = number
-        
+
         check_print("toVisit: ", self.__toVisit)
 
-        self.getNewSafeCoordinate()
+        if not self.__toVisit:
+            self.getNewSafeCoordinate()
         check_print("Mines: ", self.__mines)
-
-        # add code here
 
         safe = self.checkSafe(self.__valueX, self.__valueY, number) #add safe coord to toVisit when it's 0)
 
@@ -141,5 +140,3 @@ class MyAI( AI ):
 
     def checkSurrounding(self):
         pass
-
-
