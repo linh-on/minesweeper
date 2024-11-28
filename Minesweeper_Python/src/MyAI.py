@@ -40,24 +40,23 @@ class MyAI( AI ):
         self.__mines = set()
         self.__minesDict = dict()
         self.__flag = set()
-        self.__danger = set()
+        self.__board = {
+            (x, y)
+            for x in range(colDimension)
+            for y in range(rowDimension)
+        }
 
     def getAction(self, number: int):
-        unvisited_tiles = [
-                (x, y) for x in range(self.__colDimension) for y in range(self.__rowDimension)
-                if (x, y) not in self.__checked and (x, y) not in self.__mines
-            ]
-        
         if len(self.__checked) + len(self.__mines) == self.__totalTiles:
             #leave when the number of checked and the number of mines are equal to total number of tiles
             return Action(AI.Action.LEAVE)
         
         if len(self.__flag) == self.__totalMines:
             #found all flag -> the rest are safe
-            for t in unvisited_tiles:
-                self.__toVisit.add(t)
+            self.__toVisit.update(self.__board)
             
         self.__checked.add((self.__valueX, self.__valueY))
+        self.__board.discard((self.__valueX, self.__valueY))
 
         if number > 0:
             self.__minesDict[(self.__valueX, self.__valueY)] = number
@@ -66,13 +65,10 @@ class MyAI( AI ):
 
         if not self.__toVisit:
             self.getNewSafeCoordinate()
+            
         check_print("Mines: ", self.__mines)
 
-        safe = self.checkSafe(self.__valueX, self.__valueY, number) #add safe coord to toVisit when it's 0)
-
-        for new_x, new_y in safe:
-            if (new_x, new_y) not in self.__checked and (new_x, new_y) not in self.__mines:
-                self.__toVisit.add((new_x, new_y))
+        self.checkSafe(self.__valueX, self.__valueY, number)
 
         if (len(self.__flag) != len(self.__mines)) and not self.__toVisit:
             # continue flagging if there are still flags
@@ -87,8 +83,8 @@ class MyAI( AI ):
             self.__valueX, self.__valueY = self.__toVisit.pop() #get the new coordinates from toVisit for the next action
         else:
             check_print("RANDOM TIME")
-            if unvisited_tiles:
-                self.__valueX, self.__valueY = random.choice(unvisited_tiles)
+            if self.__board:
+                self.__valueX, self.__valueY = random.choice(list(self.__board))
         return Action(AI.Action.UNCOVER, self.__valueX, self.__valueY)
    
     def getNeighbors(self, x, y):
@@ -110,21 +106,16 @@ class MyAI( AI ):
         if len(filtered) == number:
             for new_x, new_y in filtered:
                 self.__mines.add((new_x, new_y))
-            return filtered
-        return []
+                self.__board.discard((new_x, new_y))
 
     def checkSafe(self, x, y, number):
         neighbors = self.getNeighbors(x, y)
         #return the coordinates of the mines
         mines = [n for n in neighbors if n in self.__mines]
         if len(mines) == number:
-            # the rest will be safe
-            safe = []
             for n in neighbors:
                 if n not in mines and n not in self.__checked and n not in self.__toVisit:
-                    safe.append(n)
-            return safe
-        return []
+                    self.__toVisit.add(n)
 
     def getNewSafeCoordinate(self):
         safe = []
@@ -137,6 +128,7 @@ class MyAI( AI ):
         for new_x, new_y in safe:
             if (new_x, new_y) not in self.__checked and (new_x, new_y) not in self.__mines:
                 self.__toVisit.add((new_x, new_y))
+                
 
     def checkSurrounding(self):
         pass
